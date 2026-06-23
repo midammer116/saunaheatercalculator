@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sauna Heater Size Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #F60202;
+    --red-dark: #C20000;
+    --red-light: #FFF0F0;
+    --red-bg: #FFF5F5;
+    --gray-50: #FAFAFA;
+    --gray-100: #F5F5F5;
+    --gray-200: #E5E5E5;
+    --gray-300: #D4D4D4;
+    --gray-400: #A3A3A3;
+    --gray-500: #737373;
+    --gray-600: #525252;
+    --gray-700: #404040;
+    --gray-800: #262626;
+    --gray-900: #171717;
+    --white: #FFFFFF;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  body {
+    font-family: 'Noto Sans Display', system-ui, -apple-system, sans-serif;
+    background: var(--gray-100);
+    color: var(--gray-900);
+    line-height: 1.5;
+    padding: 20px;
+  }
+
+  .calc-wrap {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .calc-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .calc-head {
+    background: var(--red);
+    color: var(--white);
+    padding: 24px 28px 20px;
+    text-align: center;
+  }
+
+  .calc-head .icon-wrap {
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+
+  .calc-head .icon-wrap svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .calc-head h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .calc-head p {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    margin-top: 4px;
+  }
+
+  .calc-body {
+    padding: 20px 24px 24px;
+  }
+
+  .row {
+    margin-bottom: 18px;
+  }
+
+  .row:last-child { margin-bottom: 0; }
+
+  .label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+  }
+
+  /* Unit toggle */
+  .unit-group {
+    display: flex;
+    gap: 0;
+    background: var(--gray-100);
+    border-radius: 6px;
+    padding: 3px;
+    width: fit-content;
+  }
+
+  .unit-group button {
+    padding: 6px 18px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--gray-500);
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .unit-group button.active {
+    background: var(--white);
+    color: var(--gray-900);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+
+  /* Dimension inputs */
+  .dim-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .dim-field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--gray-600);
+    margin-bottom: 4px;
+  }
+
+  .dim-field input {
+    width: 100%;
+    padding: 9px 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+  }
+
+  .dim-field input:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(246,2,2,0.12);
+  }
+
+  /* Radio options as compact chips */
+  .chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.12s;
+    background: var(--white);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--gray-600);
+  }
+
+  .chip:hover {
+    border-color: var(--gray-400);
+  }
+
+  .chip.selected {
+    border-color: var(--red);
+    background: var(--red-light);
+    color: var(--red-dark);
+  }
+
+  .chip input { display: none; }
+
+  .chip .sub {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--gray-400);
+    margin-left: 2px;
+  }
+
+  .chip.selected .sub { color: var(--red); }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--gray-200);
+    margin: 18px 0;
+  }
+
+  /* Result hero */
+  .result-area {
+    background: var(--red-bg);
+    border: 1px solid rgba(246,2,2,0.12);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .result-area .r-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-500);
+  }
+
+  .result-area .r-kw {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: var(--red);
+    line-height: 1;
+    margin: 4px 0 2px;
+    letter-spacing: -0.02em;
+  }
+
+  .result-area .r-unit {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--red);
+  }
+
+  .result-area .r-range {
+    font-size: 0.78rem;
+    color: var(--gray-500);
+    margin-top: 4px;
+  }
+
+  .result-area .r-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(246,2,2,0.1);
+  }
+
+  .result-area .r-stat .rs-val {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gray-800);
+  }
+
+  .result-area .r-stat .rs-lbl {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gray-400);
+    font-weight: 600;
+  }
+
+  /* Size bars compact */
+  .sizes-compact { margin-top: 14px; text-align: left; }
+
+  .sizes-compact .sc-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+  }
+
+  .size-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    padding: 2px 0;
+  }
+
+  .size-row .s-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 38px;
+    text-align: right;
+    color: var(--gray-600);
+  }
+
+  .size-row .s-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(246,2,2,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .size-row .s-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.25s ease, background 0.25s ease;
+    background: var(--gray-200);
+  }
+
+  .size-row .s-fill.active {
+    background: var(--red);
+  }
+
+  .size-row .s-cap {
+    font-size: 0.68rem;
+    color: var(--gray-400);
+    min-width: 64px;
+  }
+
+  .size-row.recommended .s-name { color: var(--red); font-weight: 700; }
+  .size-row.recommended .s-cap { color: var(--red); font-weight: 600; }
+
+  /* Electrical compact */
+  .elec-box {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 14px;
+    text-align: left;
+  }
+
+  .elec-box .e-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+  }
+
+  .elec-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 14px;
+  }
+
+  .elec-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 0.82rem;
+  }
+
+  .elec-item .el { color: var(--gray-500); }
+  .elec-item .ev { font-weight: 600; color: var(--gray-800); }
+
+  .footnote {
+    font-size: 0.68rem;
+    color: var(--gray-400);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--gray-200);
+  }
+
+  .hidden { display: none; }
+
+  @media (max-width: 480px) {
+    .calc-body { padding: 16px; }
+    .calc-head { padding: 20px 16px 16px; }
+    .dim-grid { gap: 6px; }
+    .dim-field input { padding: 8px 8px; font-size: 0.9rem; }
+    .result-area .r-kw { font-size: 2.6rem; }
+    .chip { font-size: 0.78rem; padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="calc-wrap">
+  <div class="calc-card">
+    <div class="calc-head">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="2" width="16" height="20" rx="2"/>
+          <line x1="8" y1="6" x2="16" y2="6"/>
+          <line x1="16" y1="14" x2="16" y2="18"/>
+          <path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/>
+          <path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/>
+        </svg>
+      </div>
+      <h1>Sauna Heater Size Calculator</h1>
+      <p>Find the right kW for your sauna room</p>
+    </div>
+
+    <div class="calc-body">
+      <!-- Unit Toggle -->
+      <div class="row">
+        <div class="label">Units</div>
+        <div class="unit-group" id="unitGroup">
+          <button class="active" data-unit="ft">Feet</button>
+          <button data-unit="m">Meters</button>
+        </div>
+      </div>
+
+      <!-- Dimensions -->
+      <div class="row">
+        <div class="label">Room Dimensions</div>
+        <div class="dim-grid">
+          <div class="dim-field">
+            <label id="lblW" for="inpW">Width</label>
+            <input type="number" id="inpW" min="0.1" step="0.5" value="6">
+          </div>
+          <div class="dim-field">
+            <label id="lblD" for="inpD">Depth</label>
+            <input type="number" id="inpD" min="0.1" step="0.5" value="6">
+          </div>
+          <div class="dim-field">
+            <label id="lblH" for="inpH">Height</label>
+            <input type="number" id="inpH" min="0.1" step="0.5" value="7">
+          </div>
+        </div>
+      </div>
+
+      <!-- Wall Material -->
+      <div class="row">
+        <div class="label">Wall Material</div>
+        <div class="chip-group" id="wallGroup">
+          <label class="chip selected" data-wall="wood"><input type="radio" name="wall" value="wood" checked>Wood</label>
+          <label class="chip" data-wall="concrete"><input type="radio" name="wall" value="concrete">Concrete / Brick <span class="sub">1.4x</span></label>
+          <label class="chip" data-wall="glass"><input type="radio" name="wall" value="glass">Glass panels <span class="sub">1.5x</span></label>
+          <label class="chip" data-wall="tile"><input type="radio" name="wall" value="tile">Tile / Stone <span class="sub">1.35x</span></label>
+        </div>
+      </div>
+
+      <!-- Insulation -->
+      <div class="row">
+        <div class="label">Insulation</div>
+        <div class="chip-group" id="insGroup">
+          <label class="chip selected" data-ins="well"><input type="radio" name="ins" value="well" checked>Well insulated</label>
+          <label class="chip" data-ins="average"><input type="radio" name="ins" value="average">Average <span class="sub">1.15x</span></label>
+          <label class="chip" data-ins="poor"><input type="radio" name="ins" value="poor">Poor / none <span class="sub">1.3x</span></label>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- RESULTS -->
+      <div class="result-area" id="resultArea">
+        <div class="r-label">Recommended Heater Size</div>
+        <div class="r-kw" id="rKw">6</div>
+        <div class="r-unit">kilowatts (kW)</div>
+        <div class="r-range" id="rRange">Calculated need: 4.6–5.6 kW</div>
+
+        <div class="r-stats">
+          <div class="r-stat">
+            <div class="rs-val" id="rVol">252 ft³</div>
+            <div class="rs-lbl">Room Volume</div>
+          </div>
+          <div class="r-stat">
+            <div class="rs-val" id="rAdj">252 ft³</div>
+            <div class="rs-lbl">Adjusted Volume</div>
+          </div>
+        </div>
+
+        <!-- Size bars -->
+        <div class="sizes-compact">
+          <div class="sc-label">Common Sizes</div>
+          <div id="sizeBars"></div>
+        </div>
+
+        <!-- Electrical -->
+        <div class="elec-box">
+          <div class="e-label">Electrical (240V)</div>
+          <div class="elec-grid">
+            <div class="elec-item"><span class="el">Breaker</span><span class="ev" id="eBrk">30A</span></div>
+            <div class="elec-item"><span class="el">Amperage</span><span class="ev" id="eAmp">25A</span></div>
+            <div class="elec-item"><span class="el">Wire Gauge</span><span class="ev" id="eWir">10 AWG</span></div>
+            <div class="elec-item"><span class="el">Voltage</span><span class="ev">240V</span></div>
+          </div>
+          <div class="footnote">Always consult a licensed electrician. Requirements vary by local code.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const WALL = {
+    wood:     { mult: 1.0 },
+    concrete: { mult: 1.4 },
+    glass:    { mult: 1.5 },
+    tile:     { mult: 1.35 }
+  };
+
+  const INSUL = {
+    well:    { mult: 1.0 },
+    average: { mult: 1.15 },
+    poor:    { mult: 1.3 }
+  };
+
+  const SIZES = [
+    { kw: 3,   min: 0,     max: 165 },
+    { kw: 4.5, min: 165,   max: 247.5 },
+    { kw: 6,   min: 247.5, max: 330 },
+    { kw: 8,   min: 330,   max: 440 },
+    { kw: 9,   min: 440,   max: 495 },
+    { kw: 10.5, min: 495,  max: 577.5 },
+    { kw: 12,   min: 577.5, max: 660 },
+    { kw: 15,   min: 660,  max: 825 },
+    { kw: 18,   min: 825,  max: Infinity }
+  ];
+
+  function getElec(kw) {
+    const amps = Math.round((kw * 1000) / 240);
+    let brk, wir;
+    if (amps <= 16)    { brk = '20A'; wir = '12 AWG'; }
+    else if (amps <= 24) { brk = '30A'; wir = '10 AWG'; }
+    else if (amps <= 32) { brk = '40A'; wir = '8 AWG'; }
+    else if (amps <= 40) { brk = '50A'; wir = '8 AWG'; }
+    else if (amps <= 48) { brk = '60A'; wir = '6 AWG'; }
+    else                 { brk = '70A'; wir = '6 AWG'; }
+    return { brk, wir, amps };
+  }
+
+  // Refs
+  const unitBtns = document.querySelectorAll('#unitGroup button');
+  const inpW = document.getElementById('inpW');
+  const inpD = document.getElementById('inpD');
+  const inpH = document.getElementById('inpH');
+  const lblW = document.getElementById('lblW');
+  const lblD = document.getElementById('lblD');
+  const lblH = document.getElementById('lblH');
+  const wallRadios = document.querySelectorAll('input[name="wall"]');
+  const insRadios = document.querySelectorAll('input[name="ins"]');
+  const rKw = document.getElementById('rKw');
+  const rRange = document.getElementById('rRange');
+  const rVol = document.getElementById('rVol');
+  const rAdj = document.getElementById('rAdj');
+  const sizeBarsEl = document.getElementById('sizeBars');
+  const eBrk = document.getElementById('eBrk');
+  const eWir = document.getElementById('eWir');
+  const eAmp = document.getElementById('eAmp');
+
+  let unit = 'ft';
+
+  // Chip toggle styling
+  document.querySelectorAll('.chip').forEach(el => {
+    const radio = el.querySelector('input[type="radio"]');
+    radio.addEventListener('change', function() {
+      const group = this.closest('.chip-group');
+      group.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+      if (this.checked) el.classList.add('selected');
+      calc();
+    });
+    if (radio.checked) el.classList.add('selected');
+  });
+
+  // Unit toggle
+  unitBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      unitBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      unit = this.dataset.unit;
+      const u = unit === 'ft' ? 'ft' : 'm';
+      lblW.textContent = 'Width (' + u + ')';
+      lblD.textContent = 'Depth (' + u + ')';
+      lblH.textContent = 'Height (' + u + ')';
+      if (unit === 'm') { inpW.value = 2; inpD.value = 2; inpH.value = 2.2; }
+      else              { inpW.value = 6; inpD.value = 6; inpH.value = 7; }
+      calc();
+    });
+  });
+
+  // Input events
+  [inpW, inpD, inpH].forEach(el => el.addEventListener('input', calc));
+
+  // Main calc - UNCHANGED LOGIC
+  function calc() {
+    const w = parseFloat(inpW.value) || 0;
+    const d = parseFloat(inpD.value) || 0;
+    const h = parseFloat(inpH.value) || 0;
+    const vol = w * d * h;
+
+    let wallV = 'wood';
+    wallRadios.forEach(r => { if (r.checked) wallV = r.value; });
+    let insV = 'well';
+    insRadios.forEach(r => { if (r.checked) insV = r.value; });
+
+    const wm = WALL[wallV].mult;
+    const im = INSUL[insV].mult;
+
+    let volCF = vol;
+    if (unit === 'm') volCF = vol * 35.315;
+    const adj = volCF * wm * im;
+    const base = adj / 50;
+
+    let matched = SIZES.find(s => adj >= s.min && adj < s.max);
+    if (!matched) matched = SIZES[SIZES.length - 1];
+
+    const rMin = (adj / 55).toFixed(1);
+    const rMax = (adj / 45).toFixed(1);
+
+    rKw.textContent = matched.kw;
+    rRange.textContent = 'Calculated need: ' + rMin + '–' + rMax + ' kW';
+
+    rVol.textContent = unit === 'm' ? vol.toFixed(1) + ' m³' : Math.round(vol) + ' ft³';
+    rAdj.textContent = Math.round(adj) + ' ft³';
+
+    const e = getElec(matched.kw);
+    eBrk.textContent = e.brk;
+    eWir.textContent = e.wir;
+    eAmp.textContent = e.amps + 'A';
+
+    renderBars(matched.kw);
+  }
+
+  function renderBars(active) {
+    const last = SIZES[SIZES.length - 1];
+    const maxV = last.max === Infinity ? last.min * 1.2 : last.max;
+    let html = '';
+    SIZES.forEach(s => {
+      const eff = s.max === Infinity ? s.min * 1.2 : s.max;
+      const pct = Math.min((eff / maxV) * 100, 100);
+      const act = s.kw === active;
+      const cap = s.max === Infinity
+        ? Math.round(s.min) + '+ ft³'
+        : Math.round(s.min) + '–' + Math.round(s.max) + ' ft³';
+      html += '<div class="size-row' + (act ? ' recommended' : '') + '">'
+        + '<div class="s-name">' + s.kw + ' kW</div>'
+        + '<div class="s-track"><div class="s-fill' + (act ? ' active' : '') + '" style="width:' + pct + '%"></div></div>'
+        + '<div class="s-cap">' + (act ? 'Your size' : cap) + '</div>'
+        + '</div>';
+    });
+    sizeBarsEl.innerHTML = html;
+  }
+
+  calc();
+})();
+</script>
+</body>
+</html>
